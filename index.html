@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>云上创想 · 青春向新 — 阿里云大广赛H5</title>
+<style>
+/* ===== Design System ===== */
+:root {
+  --primary: #4A90D9;
+  --primary-light: #6BA3E8;
+  --primary-dark: #2E6DB4;
+  --accent: #FFD700;
+  --accent-light: #FFE066;
+  --purple: #7B68EE;
+  --cyan: #00D4FF;
+  --bg-deep: #0A1628;
+  --bg-card: rgba(255,255,255,0.06);
+  --glass: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.12);
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255,255,255,0.75);
+  --text-muted: rgba(255,255,255,0.4);
+  --radius-card: 20px;
+  --radius-btn: 12px;
+  --radius-sm: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  width: 100%; height: 100%;
+  font-family: var(--font);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+/* ===== Snap Scroll Container ===== */
+.scroll-container {
+  width: 100%; height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-container::-webkit-scrollbar { display: none; }
+
+.page {
+  width: 100%; height: 100vh; height: 100dvh;
+  scroll-snap-align: start;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px var(--safe-bottom);
+}
+
+/* ===== Progress Bar ===== */
+.progress-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: 3px; background: rgba(255,255,255,0.1);
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--purple));
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ===== Navigation Dots ===== */
+.nav-dots {
+  position: fixed; right: 12px; top: 50%; transform: translateY(-50%); z-index: 100;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.nav-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none; cursor: pointer; transition: all 0.3s;
+  padding: 0;
+}
+.nav-dot.active { background: var(--primary-light); box-shadow: 0 0 12px rgba(74,144,217,0.6); width: 10px; height: 10px; }
+
+/* ===== Page Indicators ===== */
+.page-indicator {
+  position: absolute; top: 16px; right: 24px;
+  font-size: 13px; color: var(--text-muted);
+  letter-spacing: 2px;
+  font-weight: 300;
+}
+
+/* ===== Glass Card ===== */
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  width: 100%;
+}
+
+/* ===== Glow Button ===== */
+.btn-glow {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 36px;
+  border: none; border-radius: var(--radius-btn);
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  color: #fff; font-size: 16px; font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+  letter-spacing: 1px;
+}
+.btn-glow::after {
+  content: ''; position: absolute; inset: -2px;
+  background: linear-gradient(135deg, var(--primary), var(--purple), var(--accent));
+  border-radius: inherit; z-index: -1;
+  opacity: 0; transition: opacity 0.3s;
+  filter: blur(12px);
+}
+.btn-glow:active { transform: scale(0.96); }
+.btn-glow:active::after { opacity: 0.6; }
+.btn-outline {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 12px 28px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-btn);
+  background: transparent;
+  color: var(--text-secondary); font-size: 14px;
+  cursor: pointer; transition: all 0.3s;
+}
+.btn-outline:active { background: var(--glass); border-color: var(--primary); color: var(--primary-light); }
+
+/* ===== Background Particles Canvas ===== */
+#particle-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== Floating Orb Elements ===== */
+.orb {
+  position: absolute; border-radius: 50%;
+  pointer-events: none;
+  filter: blur(60px);
+  opacity: 0.15;
+}
+
+/* ===== Keyframes ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(74,144,217,0.3); }
+  50% { box-shadow: 0 0 40px rgba(74,144,217,0.6), 0 0 80px rgba(123,104,238,0.2); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes cloudFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-15px) scale(1.02); }
+}
+.animate-in { animation: fadeUp 0.6s ease-out both; }
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.45s; }
+.delay-4 { animation-delay: 0.6s; }
+
+/* ======================================== */
+/* PAGE 1: COVER */
+/* ======================================== */
+#page-cover {
+  background: linear-gradient(180deg, #0A1628 0%, #1A2840 50%, #0A1628 100%);
+  text-align: center;
+}
+#page-cover .orb-1 {
+  width: 300px; height: 300px;
+  background: var(--primary);
+  top: -10%; left: -20%;
+  animation: float 6s ease-in-out infinite;
+}
+#page-cover .orb-2 {
+  width: 250px; height: 250px;
+  background: var(--purple);
+  bottom: -10%; right: -15%;
+  animation: float 8s ease-in-out infinite reverse;
+}
+#page-cover .orb-3 {
+  width: 180px; height: 180px;
+  background: var(--accent);
+  top: 50%; left: 60%;
+  animation: float 7s ease-in-out infinite 1s;
+}
+.cover-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.cover-badge {
+  font-size: 12px; color: var(--text-muted);
+  letter-spacing: 3px; text-transform: uppercase;
+  padding: 6px 16px;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  background: var(--glass);
+}
+.cover-title {
+  font-size: 42px; font-weight: 800;
+  background: linear-gradient(135deg, #fff 30%, var(--primary-light) 60%, var(--accent-light) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.15;
+  letter-spacing: 4px;
+}
+.cover-subtitle {
+  font-size: 18px; color: var(--text-secondary);
+  font-weight: 300;
+  letter-spacing: 6px;
+}
+.cover-slogan {
+  font-size: 14px; color: var(--accent);
+  letter-spacing: 2px;
+  padding: 8px 20px;
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: 20px;
+  background: rgba(255,215,0,0.05);
+}
+.cover-btn { margin-top: 24px; animation: pulse-glow 2s ease-in-out infinite; }
+.cover-bottom {
+  position: absolute; bottom: calc(40px + var(--safe-bottom));
+  left: 24px; right: 24px;
+  font-size: 11px; color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ======================================== */
+/* PAGE 2: SCENARIO BRIEF */
+/* ======================================== */
+#page-scenario { text-align: left; padding-top: 48px; }
+.page-header {
+  text-align: center; margin-bottom: 20px;
+  position: relative; z-index: 1;
+}
+.page-header h2 {
+  font-size: 22px; font-weight: 700;
+  background: linear-gradient(90deg, var(--primary-light), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.page-header p {
+  font-size: 13px; color: var(--text-muted);
+  margin-top: 4px;
+}
+.brief-card {
+  position: relative; z-index: 1;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  width: 100%;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.brief-header {
+  display: flex; align-items: center; gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.brief-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; color: #fff;
+}
+.brief-client {
+  font-size: 15px; font-weight: 600; color: var(--text-primary);
+}
+.brief-client small {
+  display: block; font-size: 11px; font-weight: 400; color: var(--text-muted);
+}
+.brief-row {
+  display: flex; gap: 8px;
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6;
+}
+.brief-label {
+  color: var(--text-muted); white-space: nowrap;
+  min-width: 60px;
+}
+.brief-role-tag {
+  font-size: 12px; color: var(--primary-light);
+  padding: 4px 12px;
+  border: 1px solid rgba(74,144,217,0.3);
+  border-radius: 16px;
+  background: rgba(74,144,217,0.05);
+  text-align: center;
+  margin-top: 4px;
+}
+.brief-accept {
+  text-align: center; margin-top: 8px;
+}
+
+/* ======================================== */
+/* PAGE 3: CAMPUS SCENE */
+/* ======================================== */
+#page-scene { padding-top: 48px; }
+.scene-image-wrap {
+  position: relative; z-index: 1;
+  width: 100%;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.scene-image-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.scene-title {
+  text-align: center;
+  font-size: 22px; font-weight: 700;
+  background: linear-gradient(90deg, var(--primary-light), var(--purple));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+}
+.scene-desc {
+  text-align: center;
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.8;
+  max-width: 90%;
+}
+.scene-pain-points {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 20px;
+}
+.pain-point {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+}
+.pain-point-icon {
+  font-size: 24px;
+  min-width: 40px;
+  text-align: center;
+}
+.pain-point-text {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.5;
+}
+.pain-point-text strong {
+  display: block;
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+/* ======================================== */
+/* PAGE 4: SOLUTION — CLOUD CARDS */
+/* ======================================== */
+#page-solution { padding-top: 48px; }
+.solution-intro {
+  text-align: center;
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.8;
+  max-width: 90%;
+  margin-bottom: 24px;
+}
+.cloud-cards {
+  display: flex; flex-direction: column; gap: 14px;
+  width: 100%;
+}
+.cloud-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 20px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  transition: all 0.3s;
+  animation: cloudFloat 4s ease-in-out infinite;
+}
+.cloud-card:nth-child(2) { animation-delay: 1s; }
+.cloud-card:nth-child(3) { animation-delay: 2s; }
+.cloud-card:active { transform: scale(0.98); }
+.cloud-card-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.cloud-card-icon.blue { background: linear-gradient(135deg, var(--primary), var(--cyan)); }
+.cloud-card-icon.purple { background: linear-gradient(135deg, var(--purple), var(--primary-light)); }
+.cloud-card-icon.gold { background: linear-gradient(135deg, var(--accent), #FFA500); }
+.cloud-card-title {
+  font-size: 18px; font-weight: 700;
+  color: var(--text-primary);
+}
+.cloud-card-desc {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+/* ======================================== */
+/* PAGE 5: QUIZ */
+/* ======================================== */
+#page-quiz { padding-top: 48px; }
+.quiz-area {
+  position: relative; z-index: 1;
+  width: 100%; display: flex; flex-direction: column; gap: 14px;
+}
+.quiz-progress {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12px; color: var(--text-muted);
+}
+.quiz-progress-bar {
+  flex: 1; height: 4px; background: var(--glass-border);
+  border-radius: 2px; overflow: hidden;
+}
+.quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--purple));
+  border-radius: 2px; transition: width 0.3s;
+}
+.quiz-question {
+  font-size: 17px; font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.5;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+}
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt {
+  padding: 14px 18px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: var(--glass);
+  color: var(--text-secondary);
+  font-size: 14px; cursor: pointer;
+  transition: all 0.25s;
+  text-align: left; width: 100%;
+  font-family: var(--font);
+}
+.quiz-opt:active { transform: scale(0.98); }
+.quiz-opt.correct { background: rgba(82,196,26,0.15); border-color: #52C41A; color: #52C41A; }
+.quiz-opt.wrong { background: rgba(255,77,79,0.1); border-color: #FF4D4F; color: #FF4D4F; }
+.quiz-feedback {
+  font-size: 13px; color: var(--text-secondary);
+  padding: 10px; text-align: center;
+  min-height: 20px;
+}
+.quiz-score {
+  text-align: center; padding: 24px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+}
+.score-icon { font-size: 48px; margin-bottom: 12px; }
+.score-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.score-desc { font-size: 13px; color: var(--text-secondary); margin-top: 6px; }
+
+/* ======================================== */
+/* PAGE 6: RESULT POSTER */
+/* ======================================== */
+#page-poster {
+  text-align: center;
+  background: linear-gradient(180deg, #0A1628 0%, #1A2840 50%, #0A1628 100%);
+}
+.poster-wrap {
+  position: relative; z-index: 1;
+  width: 100%;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.poster-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.poster-content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.poster-badge {
+  font-size: 12px; color: var(--accent);
+  letter-spacing: 3px;
+  padding: 6px 16px;
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 20px;
+  background: rgba(255,215,0,0.05);
+}
+.poster-title {
+  font-size: 28px; font-weight: 800;
+  background: linear-gradient(135deg, #fff 20%, var(--accent-light) 60%, var(--purple) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+.poster-desc {
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.8;
+  max-width: 90%;
+}
+.poster-tags {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+.poster-tag {
+  font-size: 12px; color: var(--primary-light);
+  padding: 4px 12px;
+  border: 1px solid rgba(74,144,217,0.3);
+  border-radius: 12px;
+  background: rgba(74,144,217,0.05);
+}
+
+/* ======================================== */
+/* PAGE 7: CLOSING */
+/* ======================================== */
+#page-closing {
+  text-align: center;
+  background: linear-gradient(180deg, #0A1628 0%, #1A2840 50%, #0A1628 100%);
+}
+.closing-wrap {
+  position: relative; z-index: 1;
+  width: 100%;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.closing-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0.6;
+}
+.closing-content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.closing-badge {
+  font-size: 12px; color: var(--accent);
+  letter-spacing: 3px;
+  padding: 6px 16px;
+  border: 1px solid rgba(255,215,0,0.3);
+  border-radius: 20px;
+  background: rgba(255,215,0,0.05);
+}
+.closing-title {
+  font-size: 36px; font-weight: 800;
+  background: linear-gradient(135deg, #fff 20%, var(--accent-light) 60%, var(--purple) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+.closing-desc {
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.8;
+  max-width: 90%;
+}
+.closing-qr { margin-top: 12px; }
+.qr-placeholder {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 20px 40px;
+  border: 2px dashed var(--glass-border);
+  border-radius: var(--radius-card);
+  background: var(--glass);
+}
+.qr-placeholder img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+}
+.qr-text { font-size: 13px; color: var(--text-muted); }
+.closing-credits {
+  font-size: 13px; color: var(--text-secondary);
+  margin-top: 12px; line-height: 1.6;
+}
+.closing-replay { margin-top: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ===== Background Particles ===== -->
+<canvas id="particle-canvas"></canvas>
+
+<!-- ===== Progress Bar ===== -->
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- ===== Nav Dots ===== -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- ===== Scroll Container ===== -->
+<div class="scroll-container" id="scrollContainer">
+
+  <!-- ===================== PAGE 1: COVER ===================== -->
+  <section class="page" id="page-cover" data-page="0">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="cover-content animate-in">
+      <div class="cover-badge delay-1">阿里云 · 大广赛</div>
+      <div class="cover-title delay-2">云上创想</div>
+      <div class="cover-subtitle delay-3">青春向新</div>
+      <div class="cover-slogan delay-3">「云端启航 · 创意无界」</div>
+      <button class="btn-glow cover-btn delay-4" onclick="goToPage(1)">开始探索 →</button>
+    </div>
+    <div class="cover-bottom">
+      全国大学生广告艺术大赛 · 阿里云命题<br>
+      第18届大广赛 · 线上互动广告
+    </div>
+  </section>
+
+  <!-- ===================== PAGE 2: SCENARIO ===================== -->
+  <section class="page" id="page-scenario" data-page="1">
+    <div class="page-header animate-in">
+      <h2 class="delay-1">📋 你的创意 Brief</h2>
+      <p class="delay-2">你是一位创意策划，接到了一份校园传播委托</p>
+    </div>
+    <div class="brief-card animate-in delay-2">
+      <div class="brief-header">
+        <div class="brief-icon">☁</div>
+        <div class="brief-client">
+          云创计划 · 校园传播部
+          <small>年度项目 · 2026春季</small>
+        </div>
+      </div>
+      <div class="brief-row"><span class="brief-label">客户</span><span>阿里云 · 高校合作计划</span></div>
+      <div class="brief-row"><span class="brief-label">主题</span><span>云上创想 · 青春向新</span></div>
+      <div class="brief-row"><span class="brief-label">受众</span><span>全国大学生 / 内容创作者 / 科技爱好者</span></div>
+      <div class="brief-row"><span class="brief-label">核心</span><span>展示云计算如何赋能校园创意</span></div>
+      <div class="brief-row"><span class="brief-label">时限</span><span>48小时</span></div>
+      <div class="brief-role-tag">🔑 你的任务：用云技术点亮青春创意</div>
+      <div class="brief-accept">
+        <button class="btn-glow" onclick="goToPage(2)" style="padding:12px 32px;font-size:14px;">✓ 接受委托，开始创作</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAGE 3: CAMPUS SCENE ===================== -->
+  <section class="page" id="page-scene" data-page="2">
+    <div class="page-header animate-in">
+      <h2 class="delay-1">🎓 校园创意现场</h2>
+      <p class="delay-2">青春无限，但创作路上总有挑战</p>
+    </div>
+    <div class="scene-image-wrap animate-in delay-2">
+      <img src="assets/p3_scene.png" alt="校园创意场景">
+    </div>
+    <div class="scene-pain-points animate-in delay-3">
+      <div class="pain-point">
+        <div class="pain-point-icon">💻</div>
+        <div class="pain-point-text">
+          <strong>算力不足</strong>
+          渲染视频、训练模型，本地设备跑不动
+        </div>
+      </div>
+      <div class="pain-point">
+        <div class="pain-point-icon">👥</div>
+        <div class="pain-point-text">
+          <strong>协作困难</strong>
+          团队分散各地，文件传输版本混乱
+        </div>
+      </div>
+      <div class="pain-point">
+        <div class="pain-point-icon">🤔</div>
+        <div class="pain-point-text">
+          <strong>创意卡壳</strong>
+          灵感枯竭，不知道如何突破常规
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAGE 4: SOLUTION ===================== -->
+  <section class="page" id="page-solution" data-page="3">
+    <div class="page-header animate-in">
+      <h2 class="delay-1">☁ 云技术解决方案</h2>
+      <p class="delay-2">三大云端能力，让创意自由生长</p>
+    </div>
+    <div class="solution-intro animate-in delay-2">
+      阿里云为校园创作者提供一站式云创平台，<br>从算力到协作到AI，让每个想法都能落地。
+    </div>
+    <div class="cloud-cards animate-in delay-3">
+      <div class="cloud-card">
+        <div class="cloud-card-icon blue">⚡</div>
+        <div>
+          <div class="cloud-card-title">云算力</div>
+          <div class="cloud-card-desc">弹性计算资源，随时调用强大算力<br>视频渲染、AI训练不再受限于本地设备</div>
+        </div>
+      </div>
+      <div class="cloud-card">
+        <div class="cloud-card-icon purple">🤝</div>
+        <div>
+          <div class="cloud-card-title">云协作</div>
+          <div class="cloud-card-desc">云端共享空间，多人实时协作<br>版本管理、文件同步，团队创作更流畅</div>
+        </div>
+      </div>
+      <div class="cloud-card">
+        <div class="cloud-card-icon gold">✨</div>
+        <div>
+          <div class="cloud-card-title">云智创</div>
+          <div class="cloud-card-desc">AI辅助创作，从灵感到成品<br>通义千问赋能文案、图像、视频全流程</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAGE 5: QUIZ ===================== -->
+  <section class="page" id="page-quiz" data-page="4">
+    <div class="page-header animate-in">
+      <h2 class="delay-1">🧩 云创知识挑战</h2>
+      <p class="delay-2">测测你对云技术赋能创意的了解</p>
+    </div>
+    <div class="quiz-area animate-in delay-2">
+      <div class="quiz-progress">
+        <span id="quizProgressText">题目 1/3</span>
+        <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill" style="width:33%"></div></div>
+      </div>
+      <div class="quiz-question" id="quizQuestion"></div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+      <div class="quiz-score" id="quizScore" style="display:none">
+        <div class="score-icon">🏆</div>
+        <div class="score-title" id="scoreTitle"></div>
+        <div class="score-desc" id="scoreDesc"></div>
+        <button class="btn-glow" onclick="resetQuiz()" style="margin-top:16px;padding:12px 28px;font-size:14px;">再来一次</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAGE 6: RESULT POSTER ===================== -->
+  <section class="page" id="page-poster" data-page="5">
+    <div class="poster-wrap animate-in">
+      <img src="assets/p6_poster.png" alt="创意名片背景">
+    </div>
+    <div class="poster-content animate-in delay-1">
+      <div class="poster-badge delay-1">你的创意名片</div>
+      <div class="poster-title delay-2">云上创想 · 青春向新</div>
+      <div class="poster-desc delay-3">
+        你已解锁云技术赋能创意的全部能力<br>
+        从云算力到云协作，从AI灵感到云端分享<br>
+        青春不设限，创意无边界
+      </div>
+      <div class="poster-tags delay-3">
+        <span class="poster-tag">#云算力</span>
+        <span class="poster-tag">#云协作</span>
+        <span class="poster-tag">#云智创</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PAGE 7: CLOSING ===================== -->
+  <section class="page" id="page-closing" data-page="6">
+    <div class="closing-wrap animate-in">
+      <img src="assets/p7-closing.png" alt="收束页背景">
+    </div>
+    <div class="closing-content animate-in delay-1">
+      <div class="closing-badge delay-1">创作之旅完成</div>
+      <div class="closing-title delay-2">云上创想<br>青春向新</div>
+      <div class="closing-desc delay-3">
+        感谢体验阿里云校园云创计划<br>
+        用云技术，让青春创意飞得更高
+      </div>
+      <div class="closing-qr animate-in delay-3">
+        <div class="qr-placeholder">
+          <img src="assets/qr/qrfuwuhao.png" alt="扫码体验">
+          <div class="qr-text">扫码体验作品</div>
+        </div>
+      </div>
+      <div class="closing-credits animate-in delay-4">
+        <div>全国大学生广告艺术大赛 · 第18届</div>
+        <div style="color:var(--primary-light);margin-top:4px;">阿里云 · 云上创想命题</div>
+        <div style="color:var(--text-muted);margin-top:8px;font-size:11px;">使用阿里云百炼平台 · 通义千问创作</div>
+      </div>
+      <button class="btn-outline closing-replay" onclick="goToPage(0)">🔄 重新体验</button>
+    </div>
+  </section>
+
+</div><!-- /scroll-container -->
+
+<script>
+// ===== Particle Canvas =====
+(function() {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let animId;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * 2 + 0.5;
+      this.speedX = (Math.random() - 0.5) * 0.3;
+      this.speedY = (Math.random() - 0.5) * 0.3;
+      this.opacity = Math.random() * 0.5 + 0.1;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(74,144,217,${this.opacity})`;
+      ctx.fill();
+    }
+  }
+
+  function initParticles() {
+    const count = Math.min(80, Math.floor(canvas.width * canvas.height / 10000));
+    particles = Array.from({length: count}, () => new Particle());
+  }
+  initParticles();
+
+  function connect() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(74,144,217,${0.08 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    connect();
+    animId = requestAnimationFrame(animate);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    resize();
+    initParticles();
+  });
+})();
+
+// ===== Navigation System =====
+const container = document.getElementById('scrollContainer');
+const dotsContainer = document.getElementById('navDots');
+const progressFill = document.getElementById('progressFill');
+const pages = document.querySelectorAll('.page');
+const totalPages = pages.length;
+
+// Build dots
+pages.forEach((_, i) => {
+  const dot = document.createElement('button');
+  dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  dot.onclick = () => goToPage(i);
+  dotsContainer.appendChild(dot);
+});
+
+function goToPage(index) {
+  const target = document.querySelector(`[data-page="${index}"]`);
+  if (target) target.scrollIntoView({ behavior: 'smooth' });
+}
+
+function updateNav() {
+  const scrollTop = container.scrollTop;
+  const viewH = container.clientHeight;
+  const current = Math.round(scrollTop / viewH);
+
+  document.querySelectorAll('.nav-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+  });
+
+  const progress = ((current + 1) / totalPages) * 100;
+  progressFill.style.width = progress + '%';
+}
+
+container.addEventListener('scroll', updateNav);
+updateNav();
+
+// ===== Page 5: Quiz =====
+const quizData = [
+  {
+    q: '阿里云云创计划为校园创作者提供哪三大核心能力？',
+    opts: ['仅云存储', '云算力、云协作、云智创', '仅AI写作', '云游戏'],
+    answer: 1,
+    explain: '云算力提供弹性计算资源，云协作支持团队实时共创，云智创用AI赋能全流程。'
+  },
+  {
+    q: '云算力主要解决校园创作者的什么问题？',
+    opts: ['网络速度', '本地设备性能不足', '存储空间不够', '软件安装困难'],
+    answer: 1,
+    explain: '云算力让视频渲染、AI训练等高算力需求不再受限于本地设备。'
+  },
+  {
+    q: '通义千问在云智创中扮演什么角色？',
+    opts: ['仅聊天机器人', 'AI辅助创作引擎', '云存储工具', '视频播放器'],
+    answer: 1,
+    explain: '通义千问作为AI创作引擎，赋能文案、图像、视频等全流程创作。'
+  }
+];
+let quizIdx = 0, quizScoreVal = 0;
+
+function renderQuiz() {
+  if (quizIdx >= quizData.length) return showScore();
+  const d = quizData[quizIdx];
+  document.getElementById('quizProgressText').textContent = `题目 ${quizIdx + 1}/${quizData.length}`;
+  document.getElementById('quizProgressFill').style.width = `${((quizIdx + 1) / quizData.length) * 100}%`;
+  document.getElementById('quizQuestion').textContent = d.q;
+  document.getElementById('quizFeedback').textContent = '';
+  document.getElementById('quizScore').style.display = 'none';
+
+  const optsDiv = document.getElementById('quizOptions');
+  optsDiv.innerHTML = '';
+  d.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt';
+    btn.textContent = String.fromCharCode(65 + i) + '. ' + opt;
+    btn.onclick = () => answerQuiz(i);
+    optsDiv.appendChild(btn);
+  });
+}
+
+function answerQuiz(chosen) {
+  const d = quizData[quizIdx];
+  const btns = document.querySelectorAll('.quiz-opt');
+  btns.forEach((b, i) => {
+    b.disabled = true;
+    if (i === d.answer) b.classList.add('correct');
+    if (i === chosen && i !== d.answer) b.classList.add('wrong');
+  });
+
+  if (chosen === d.answer) {
+    quizScoreVal++;
+    document.getElementById('quizFeedback').textContent = '✅ 正确！' + d.explain;
+  } else {
+    document.getElementById('quizFeedback').textContent = '❌ ' + d.explain;
+  }
+
+  setTimeout(() => { quizIdx++; renderQuiz(); }, 2000);
+}
+
+function showScore() {
+  document.getElementById('quizQuestion').textContent = '';
+  document.getElementById('quizOptions').innerHTML = '';
+  document.getElementById('quizFeedback').textContent = '';
+  const scoreDiv = document.getElementById('quizScore');
+  scoreDiv.style.display = 'block';
+
+  const titles = ['还需要继续了解云创哦', '不错，你对云创有一定了解！', '太棒了！你是云创达人！'];
+  const descs = [
+    '再体验一次H5，重新了解阿里云云创计划吧',
+    '你对云技术赋能创意已经有了不错的认知',
+    '你对云创计划了如指掌，青春与AI的完美搭档！'
+  ];
+  let tier = quizScoreVal === 0 ? 0 : quizScoreVal <= 2 ? 1 : 2;
+  document.getElementById('scoreTitle').textContent = `${quizScoreVal}/${quizData.length} — ${titles[tier]}`;
+  document.getElementById('scoreDesc').textContent = descs[tier];
+}
+
+function resetQuiz() {
+  quizIdx = 0; quizScoreVal = 0; renderQuiz();
+}
+
+renderQuiz();
+</script>
+</body>
+</html>
